@@ -1,52 +1,82 @@
 from tkinter import *
 import tkinter as tk
 
-class MyApp:
+class ToDoItem:
+
+  def __init__(self, name, description):
+    self.name = name
+    self.description = description
+
+
+class ToDoListApp:
 
   def __init__(self, root):
-    root.title("My app")
-    root.geometry("500x400")
-    root.maxsize(600,400)
+    root.title("To do list")
 
-    frame = Frame(root, width=200, height=100, borderwidth = 2, relief="groove")
-    #frame.place(x=0, y=0)
+    frame = Frame(root, borderwidth = 2, relief="sunken")
+    frame.grid(row = 1, column = 1, sticky = (N, E, S, W))
+    root.columnconfigure(1, weight = 1)
+    root.rowconfigure(1, weight = 1)
 
-    self.label_text = StringVar()
-    label = Label(root, text="Some label text", textvariable=self.label_text)
-    #label.pack(side=tk.LEFT)
-    label.grid(column=1, row=1)
-    label.configure(text = "New label text", font = ("Courier", 40))
+    # To do items list
+    list_label = Label(frame, text = "To Do Items")
+    list_label.grid(column=1, row=1, sticky=(S,W))
 
-    self.entry_text = StringVar()
-    entry = Entry(root, textvariable=self.entry_text)
-    entry.grid(column=3, row=1)
-    #entry.pack(side=tk.LEFT)
+    self.to_do_items = [
+        ToDoItem("Workout", "Push ups, pull ups, squats"),
+        ToDoItem("Housework", "Clean kitchen, seep floors, do laundry"),
+        ToDoItem("Groceries", "Buy bread, milk, eggs")
+    ]
+    self.to_do_names = StringVar(value = list(map(lambda x: x.name, self.to_do_items)))
+    items_list = Listbox(frame, listvariable=self.to_do_names)
+    items_list.bind("<<ListboxSelect>>", lambda s: self.select_item(items_list.curselection()))
+    items_list.grid(column=1, row=2, sticky=(E,W), rowspan = 5)
 
-    button = Button(root, text="Press me", command=self.press_button)
-    #button.place(x=0, y=0)
-    #button.configure(font = ("Courier", 40), width=10, height=2)
-    button.grid(column=1, row=2, sticky=(S, E, W))
-    #button.pack(side=tk.LEFT)
+    self.selected_description = StringVar()
+    selected_description_label = Label(frame, textvariable=self.selected_description, wraplength=200)
+    selected_description_label.grid(column = 1, row = 7, sticky=(N, E, W))
 
-    self.list_item_strings = ["Hey", "Hi", "Hello", "Howdy", "Greetings"]
-    list_items = StringVar(value=self.list_item_strings)
-    listbox = Listbox(root, listvariable=list_items)
-    #listbox.pack(side=tk.LEFT, padx=40, pady=20)
-    listbox["height"] = 3
-    listbox.bind("<<ListboxSelect>>", lambda s: self.select_item(listbox.curselection()))
-    listbox.grid(column=2, row=2)
+    # New item
+    new_item_label = Label(frame, text="New Item")
+    new_item_label.grid(column=2, row=1, sticky=(S,W))
 
-  def press_button(self):
-    text = self.entry_text.get()
-    self.label_text.set(text)
+    name_label = Label(frame, text="Item name")
+    name_label.grid(column=2, row=2, sticky=(S, W))
+
+    self.name = StringVar()
+    name_entry = Entry(frame, textvariable = self.name)
+    name_entry.grid(column=2, row=3, sticky=(N,W))
+
+    description_label = Label(frame, text="Item description")
+    description_label.grid(column=2, row=4, sticky=(S,W))
+
+    self.description = StringVar()
+    description_entry = Entry(frame, textvariable = self.description)
+    description_entry.grid(column=2, row=5, sticky=(N, E, W))
+
+    save_button = Button(frame, text="Save", command=self.save_item)
+    save_button.grid(column=2, row=6, sticky=(E))
+
+    for child in frame.winfo_children():
+      child.grid_configure(padx=10, pady=5)
+
+
+
+  def save_item(self):
+    name = self.name.get()
+    description = self.description.get()
+    new_item = ToDoItem(name, description)
+    self.to_do_items.append(new_item)
+    self.to_do_names.set(list(map(lambda x: x.name, self.to_do_items)))
     print("Button pressed")
 
   def select_item(self, index):
-    selected_item = self.list_item_strings[index[0]]
-    print(selected_item)
+    selected_item = self.to_do_items[index[0]]
+    self.selected_description.set(selected_item.description)
+    print("Item selected")
 
 
 
 root = Tk()
-MyApp(root)
+ToDoListApp(root)
 root.mainloop()
